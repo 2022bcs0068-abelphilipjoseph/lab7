@@ -12,7 +12,7 @@ pipeline {
         // The Docker image you built and pushed in Lab 6
         DOCKER_IMAGE = "iiitkabel/jenkins_automation_wine_prediction:latest"
         CONTAINER_NAME = "wine_inference_test"
-        API_URL = "http://localhost:8000"
+        
     }
 
     stages {
@@ -51,7 +51,7 @@ pipeline {
                     retry(12) {
                         sh "sleep 5"
                         // Assuming FastAPI automatically provides /docs or /openapi.json
-                        sh "curl -f -s ${API_URL}/docs > /dev/null"
+                        sh "curl -f -s ${env.API_URL}/docs > /dev/null"
                     }
                 }
                 echo "API is up and running!"
@@ -64,7 +64,7 @@ pipeline {
                 echo "Sending a request using the prepared valid input... "
                 script {
                     // Capture the HTTP response body and status code in one go
-                    def response = sh(script: "curl -s -w '\\n%{http_code}' -X POST ${API_URL}/predict -H 'Content-Type: application/json' -d @inputs/valid.json", returnStdout: true).trim()
+                    def response = sh(script: "curl -s -w '\\n%{http_code}' -X POST ${env.API_URL}/predict -H 'Content-Type: application/json' -d @inputs/valid.json", returnStdout: true).trim()
                     
                     def lines = response.split('\n')
                     def body = lines[0]
@@ -93,7 +93,7 @@ pipeline {
             steps {
                 echo "Sending malformed or incomplete input... "
                 script {
-                    def response = sh(script: "curl -s -w '\\n%{http_code}' -X POST ${API_URL}/predict -H 'Content-Type: application/json' -d @inputs/invalid.json", returnStdout: true).trim()
+                    def response = sh(script: "curl -s -w '\\n%{http_code}' -X POST ${env.API_URL}/predict -H 'Content-Type: application/json' -d @inputs/invalid.json", returnStdout: true).trim()
                     
                     def lines = response.split('\n')
                     def body = lines[0]
