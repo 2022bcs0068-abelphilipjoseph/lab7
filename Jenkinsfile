@@ -30,19 +30,18 @@ pipeline {
                 echo "Starting the container exposing the API port... "
                 // Stop any old containers just in case
                 sh "docker rm -f ${CONTAINER_NAME} || true"
-                // Run the container with a temporary name 
-                sh "docker run -d -p 8000:8000 --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
+
+                // Run the container with a temporary name in same network 
+                sh "docker run -d --network container:2022bcs0068_jenkins --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
 		
 		script {
-                    // THE FIX: Grab the container's internal Docker IP dynamically
-                    env.API_IP = sh(script: "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME}", returnStdout: true).trim()
                     env.API_URL = "http://${env.API_IP}:8000"
                     echo "Container running! Internal API URL set to: ${env.API_URL}"
                 }
             }
         }
 
-        // Stage 3: Wait for Service Readiness
+	        // Stage 3: Wait for Service Readiness
         stage('Wait for Service Readiness') {
             steps {
                 echo "Waiting until the API responds to a health endpoint... "
