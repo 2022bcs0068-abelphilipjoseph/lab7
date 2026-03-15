@@ -32,6 +32,13 @@ pipeline {
                 sh "docker rm -f ${CONTAINER_NAME} || true"
                 // Run the container with a temporary name 
                 sh "docker run -d -p 8000:8000 --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
+		
+		script {
+                    // THE FIX: Grab the container's internal Docker IP dynamically
+                    env.API_IP = sh(script: "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME}", returnStdout: true).trim()
+                    env.API_URL = "http://${env.API_IP}:8000"
+                    echo "Container running! Internal API URL set to: ${env.API_URL}"
+                }
             }
         }
 
